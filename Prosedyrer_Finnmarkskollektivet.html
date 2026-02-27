@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finnmarkskollektivet – Prosedyrer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Åpne meny">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-logo">Finnmarks<span>kollektivet</span></div>
+  <div class="topbar-search">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="search" placeholder="Søk prosedyre…" autocomplete="off">
+  </div>
+</div>
+
+<div class="layout">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-lbl">Kategorier</div>
+    <div class="cat-item active" data-cat="alle">
+      <span class="cat-icon">📋</span><span class="cat-label">Alle prosedyrer</span>
+      <span class="cat-count" id="cnt-alle"></span>
+    </div>
+    <div class="cat-item" data-cat="generell">
+      <span class="cat-icon">📌</span><span class="cat-label">Generelle</span>
+      <span class="cat-count" id="cnt-generell"></span>
+    </div>
+    <div class="cat-item" data-cat="varsling">
+      <span class="cat-icon">⚠️</span><span class="cat-label">Varsling, uønskede hendelser og avvik</span>
+      <span class="cat-count" id="cnt-varsling"></span>
+    </div>
+    <div class="cat-item" data-cat="rusing">
+      <span class="cat-icon">💊</span><span class="cat-label">Rusing og rusmiddeltesting</span>
+      <span class="cat-count" id="cnt-rusing"></span>
+    </div>
+    <div class="cat-item" data-cat="legemiddel">
+      <span class="cat-icon">🩺</span><span class="cat-label">Legemiddelhåndtering</span>
+      <span class="cat-count" id="cnt-legemiddel"></span>
+    </div>
+    <div class="cat-item" data-cat="vold">
+      <span class="cat-icon">🛡️</span><span class="cat-label">Vold</span>
+      <span class="cat-count" id="cnt-vold"></span>
+    </div>
+    <div class="cat-item" data-cat="selvmord">
+      <span class="cat-icon">🤝</span><span class="cat-label">Selvmord og selvmordsforsøk</span>
+      <span class="cat-count" id="cnt-selvmord"></span>
+    </div>
+    <div class="cat-item" data-cat="pasient">
+      <span class="cat-icon">🗂️</span><span class="cat-label">Pasientforløp</span>
+      <span class="cat-count" id="cnt-pasient"></span>
+    </div>
+  </nav>
+
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <main>
+    <div class="page-heading">
+      <h2 id="page-title">📋 Alle prosedyrer</h2>
+      <p id="page-desc">Oversikt over alle prosedyrer. Måned og år er når prosedyren sist ble oppdatert. Klikk «Åpne» for å gå til prosedyren i SharePoint.</p>
+    </div>
+    <div class="proc-list" id="proc-list"></div>
+    <div class="no-results" id="no-results" style="display:none">Ingen prosedyrer funnet.</div>
+  </main>
+
+</div>
+
+<footer>Finnmarkskollektivet · Prosedyrehåndbok · Lenker åpner SharePoint i ny fane</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+//  PROSEDYREDATA
+//  Erstatt hvert url-felt med den faktiske SharePoint-lenken.
+// ─────────────────────────────────────────────────────────────────
+const procedures = [
+
+  // 1. GENERELLE
+  { cat:"generell",   title:"Barn som pårørende",           updated:"Mars 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Barn%20som%20p%C3%A5r%C3%B8rende%E2%80%8B.aspx" },
+  { cat:"generell",   title:"Barnevern - bekymring, mistanke og melding",          updated:"Mars 2024", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Barnevern---bekymring,-mistanke-og-melding.aspx" },
+  { cat:"generell",   title:"Beslag og tilintetgjøring av legemidler, rusmidler, skadelige stoffer og farlige gjenstander",    updated:"Mars 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Beslag-og-tilintetgj%C3%B8ring-av-legemidler,-rusmidler,-skadelige-stoffer-og-farlige-gjenstander.aspx" },
+  { cat:"generell",   title:"Etterlatte - tilbud om og organisering av samtale etter dødsfall",                    updated:"Sep 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Etterlatte.aspx" },
+  { cat:"generell",   title:"Håndtering av uakseptabel atferd",                   updated:"Mai 2024", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/H%C3%A5ndtering-av-uakseptable-atferd.aspx" },
+  { cat:"generell",   title:"Klagetilgang",                  updated:"Juli 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Klagetilgang.aspx" },
+  { cat:"generell",   title:"Kommunikasjon med unge pasienter- ungdomsanamnese",                  updated:"Juni 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Kommunikasjon-med-unge-pasienter--ungdomsanamnese.aspx" },
+  { cat:"generell",   title:"Kontaktlege og kontaktpsykolog (oppnevning og ansvar)",                  updated:"Sep 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Kontaktlege-og-kontaktpsykolog.-Oppnevning-og-ansvar.aspx"},
+  { cat:"generell",   title:"Mestringsplan - plan for mestring, med veiledningstekst",                  updated:"Mai 2024", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Kriseplan---plan-for-mestring,-med-veiledningstekst.aspx" },
+  { cat:"generell",   title:"Kryptert fil på e-post",                  updated:"Juni 2024", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/KryptertFilEpost.aspx" },
+  { cat:"generell",   title:"Kvarus",                  updated:"Sep 2025", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Kvarus.aspx" },
+  { cat:"generell",   title:"Kvarus – tilgang og innlogging",                  updated:"Des 2023", url:"https://stfinnmarkskollektivet.sharepoint.com/sites/Porsedyrerfinnmarkskollektivet/SitePages/Kvarus-%E2%80%93-tilgang-og-innlogging.aspx" },
+  { cat:"generell",   title:"",                  updated:"Mai 2024", url:"" },
+  { cat:"generell",   title:"",                  updated:"Mai 2024", url:"" },
+  { cat:"generell",   title:"",                  updated:"Mai 2024", url:"" },
+
+  // 2. VARSLING, UØNSKEDE HENDELSER OG AVVIK
+  { cat:"varsling",   title:"",      updated:"jan 2025", url:"#" },
+  { cat:"varsling",   title:"",      updated:"jan 2025", url:"#" },
+  { cat:"varsling",   title:"",      updated:"jan 2025", url:"#" },
+  { cat:"varsling",   title:"",      updated:"jan 2025", url:"#" },
+  
+
+  // 3. RUSING OG RUSMIDDELTESTING
+  { cat:"rusing",     title:"tittel",     updated:"jan 2025", url:"#" },
+  
+
+  // 4. LEGEMIDDELHÅNDTERING
+  { cat:"legemiddel", title:"Mottak, oppbevaring og kontroll av legemidler", updated:"jan 2025", url:"#" },
+  { cat:"legemiddel", title:"Utdeling og administrering av legemidler",    updated:"jan 2025", url:"#" },
+  { cat:"legemiddel", title:"Håndtering av LAR-legemidler",               updated:"jan 2025", url:"#" },
+  { cat:"legemiddel", title:"Avvik ved legemiddelhåndtering",             updated:"jan 2025", url:"#" },
+  { cat:"legemiddel", title:"Kassering av legemidler",                    updated:"jan 2025", url:"#" },
+
+  // 5. VOLD
+  { cat:"vold",       title:"Risikovurdering og forebygging av vold",      updated:"jan 2025", url:"#" },
+  { cat:"vold",       title:"Håndtering av akutt voldssituasjon",          updated:"jan 2025", url:"#" },
+  { cat:"vold",       title:"Oppfølging av ansatte etter voldshendelse",   updated:"jan 2025", url:"#" },
+  { cat:"vold",       title:"Politianmeldelse og dokumentasjon",           updated:"jan 2025", url:"#" },
+
+  // 6. SELVMORD OG SELVMORDSFORSØK
+  { cat:"selvmord",   title:"Kartlegging av selvmordsrisiko",              updated:"jan 2025", url:"#" },
+  { cat:"selvmord",   title:"Håndtering av akutt selvmordsfare",           updated:"jan 2025", url:"#" },
+  { cat:"selvmord",   title:"Oppfølging etter selvmordsforsøk",            updated:"jan 2025", url:"#" },
+  { cat:"selvmord",   title:"Ivaretakelse av pårørende",                   updated:"jan 2025", url:"#" },
+  { cat:"selvmord",   title:"Debriefing og ivaretakelse av ansatte",       updated:"jan 2025", url:"#" },
+
+  // 7. PASIENTFORLØP
+  { cat:"pasient",    title:"Inntak og kartlegging av ny beboer",          updated:"jan 2025", url:"#" },
+  { cat:"pasient",    title:"Individuell plan (IP) og tiltaksplan",        updated:"jan 2025", url:"#" },
+  { cat:"pasient",    title:"Ansvarsgruppemøter",                          updated:"jan 2025", url:"#" },
+  { cat:"pasient",    title:"Samhandling med spesialisthelsetjenesten",    updated:"jan 2025", url:"#" },
+  { cat:"pasient",    title:"Utflytting og ettervern",                     updated:"jan 2025", url:"#" },
+  { cat:"pasient",    title:"Journalføring og dokumentasjonsplikt",        updated:"jan 2025", url:"#" },
+];
+
+const catMeta = {
+  alle:       { icon:"📋", title:"Alle prosedyrer",                         desc:"Oversikt over alle prosedyrer. Måned og år er når prosedyren sist var oppdatert. Klikk «Åpne» for å gå til prosedyren i SharePoint." },
+  generell:   { icon:"📌", title:"Generelle",                               desc:"Overordnede prosedyrer for drift, ansvar og kvalitet." },
+  varsling:   { icon:"⚠️",  title:"Varsling, uønskede hendelser og avvik",  desc:"Rutiner for melding, oppfølging og håndtering av avvik og uønskede hendelser." },
+  rusing:     { icon:"💊", title:"Rusing og rusmiddeltesting",              desc:"Prosedyrer ved mistanke om ruspåvirkning, testing og oppfølging." },
+  legemiddel: { icon:"🩺", title:"Legemiddelhåndtering",                    desc:"Rutiner for oppbevaring, utdeling, LAR og avvik ved legemidler." },
+  vold:       { icon:"🛡️", title:"Vold",                                    desc:"Forebygging, håndtering og oppfølging ved voldshendelser." },
+  selvmord:   { icon:"🤝", title:"Selvmord og selvmordsforsøk",             desc:"Kartlegging av risiko, akuttberedskap og ivaretakelse etter hendelser." },
+  pasient:    { icon:"🗂️", title:"Pasientforløp",                           desc:"Fra inntak og planlegging til utflytting og journalføring." },
+};
+
+const dotClass = {
+  generell:"d-generell", varsling:"d-varsling", rusing:"d-rusing",
+  legemiddel:"d-legemiddel", vold:"d-vold", selvmord:"d-selvmord", pasient:"d-pasient"
+};
+
+const cats = ["generell","varsling","rusing","legemiddel","vold","selvmord","pasient"];
+let activeCat = "alle", query = "";
+
+function filtered() {
+  const q = query.toLowerCase();
+  return procedures.filter(p =>
+    (activeCat === "alle" || p.cat === activeCat) &&
+    (!q || p.title.toLowerCase().includes(q))
+  );
+}
+
+function updateCounts() {
+  const q = query.toLowerCase();
+  const all = procedures.filter(p => !q || p.title.toLowerCase().includes(q));
+  document.getElementById("cnt-alle").textContent = all.length;
+  cats.forEach(c => {
+    document.getElementById("cnt-" + c).textContent =
+      all.filter(p => p.cat === c).length;
+  });
+}
+
+function hl(text, q) {
+  if (!q) return text;
+  const i = text.toLowerCase().indexOf(q);
+  if (i < 0) return text;
+  return text.slice(0,i) + `<mark>${text.slice(i,i+q.length)}</mark>` + text.slice(i+q.length);
+}
+
+function render() {
+  updateCounts();
+  const list = document.getElementById("proc-list");
+  const noRes = document.getElementById("no-results");
+  const f = filtered();
+  const meta = catMeta[activeCat];
+  document.getElementById("page-title").textContent = meta.icon + " " + meta.title;
+  document.getElementById("page-desc").textContent = meta.desc;
+
+  if (!f.length) { list.innerHTML = ""; noRes.style.display = "block"; return; }
+  noRes.style.display = "none";
+  const q = query.toLowerCase();
+  list.innerHTML = f.map(p => `
+    <div class="proc-card">
+      <div class="proc-row">
+        <div class="proc-dot ${dotClass[p.cat]}"></div>
+        <div class="proc-title">${hl(p.title, q)}</div>
+        <div class="proc-updated">${p.updated}</div>
+        <a class="proc-link" href="${p.url}" target="_blank" rel="noopener">Åpne ↗</a>
+      </div>
+    </div>`).join("");
+}
+
+document.querySelectorAll(".cat-item").forEach(el => {
+  el.addEventListener("click", () => {
+    document.querySelectorAll(".cat-item").forEach(e => e.classList.remove("active"));
+    el.classList.add("active");
+    activeCat = el.dataset.cat;
+    render();
+    if (window.innerWidth <= 680) closeSidebar();
+  });
+});
+
+document.getElementById("search").addEventListener("input", e => { query = e.target.value; render(); });
+
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+function closeSidebar() { sidebar.classList.remove("open"); overlay.classList.remove("open"); }
+document.getElementById("hamburger").addEventListener("click", () => { sidebar.classList.toggle("open"); overlay.classList.toggle("open"); });
+overlay.addEventListener("click", closeSidebar);
+
+render();
+</script>
+</body>
+</html>
