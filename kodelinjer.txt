@@ -1,0 +1,4 @@
+Kode for å legge til prosedyre i generell
+{ cat:"generell",   title:"",                  updated:"Mai 2024", url:"" },
+
+kode for å legge
